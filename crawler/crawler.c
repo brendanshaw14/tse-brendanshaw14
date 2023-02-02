@@ -52,7 +52,7 @@ return 0;
 
 static void parseArgs(const int argc, char* argv[],
                       char** seedURL, char** pageDirectory, int* maxDepth){
-  if(argc != 3){
+  if(argc != 4){
     printf("Error: Invalid Number of arguments.");
     exit(1);
   }
