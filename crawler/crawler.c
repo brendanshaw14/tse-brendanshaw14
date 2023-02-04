@@ -69,7 +69,7 @@ static void parseArgs(const int argc, char* argv[],
   }
   //verify that max depth isn't out of range
   sscanf(argv[3], "%d", maxDepth);
-  if (*maxDepth < 1 || *maxDepth > 10){
+  if (*maxDepth < 0 || *maxDepth > 10){
     printf("Error: Invalid max depth: choose a number between 1 and 10.");
     exit(1);
   }

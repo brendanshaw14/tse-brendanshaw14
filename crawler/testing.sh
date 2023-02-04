@@ -4,69 +4,90 @@
 ##Author: Brendan Shaw
 ##CS50-23W
 
+make clean
 
-#zero arguments
-echo "Zero Arguments Test: "
+make
+
+echo -e "\n Zero Arguments Test: "
 ./crawler
 
-#one argument: seedURL
-echo "One Argument Test"
+echo -e "\n One Argument Test"
 ./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html
 
-#two arguments: seedURL and pageDir
-echo "Two Valid Arguments Test"
+echo -e "\n Two Arguments Test"
 ./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../data/letters
 
-
-#two arguments part II: input temp and windchill 
-echo "Two Valid Arguments Test Again"
-./chill -10 130 
-
-#invalid arguments- not numbers
-echo "One Invalid Argument"
-./chill 15j 12
-
-#invalid arguments II- not numbers
 echo -e "\n Two Invalid Arguments Test"
-./chill ajf lll
+./crawler abc def
 
-#invalid arguments III- not numbers
-echo -e "\n One Invalid Argument Test"
-./chill f
+echo -e "\n Incorrect number of args test"
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../data/letters abc def
 
-#invalid arguments V- inputs out of range 
-echo -e "\n Invalid Temp test"
-./chill 140
+echo -e "\n Three Arguments- invalid URL Test"
+./crawler http://cs50ts.cs.dartmouth.edu/tse/letters/index.html ../data/letters 2
 
-#invalid arguments VI- inputs out of range 
-echo -e "\n Invalid wind test" 
-./chill 100 -10
+echo -e "\n Three Arguments- invalid pageDir Test"
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html invalid 2
 
-#valid arguments - temp edge case
-echo "temp edge case" 
-./chill -98 10
+echo -e "\n Three Arguments- invalid maxDepth edge case Test"
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../data/letters 11
 
-#valid arguments- wind velocity edge case
-echo "Wind velocity edge case"
-./chill -10 0.6
+echo -e "\n Three Arguments- invalid maxDepth case Test"
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../data/letters 22
 
-#valid arguments - temp edge case- one arg
-echo "temp edge case" 
-./chill -98 
+echo -e "\n Valid args: letters 0" 
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../data/letters 0
+make clean
+make
 
-#invalid arguments - first invalid temp 
-echo "first invalid temp case" 
-./chill -99 
+echo -e "\n Valid args: letters 1" 
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../data/letters 1
+make clean
+make
 
-#invalid arguments - first invalid wind 
-echo "first invalid wind speed"
-./chill 15 231
+echo -e "\n Valid args: letters 2" 
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../data/letters 2
+make clean
+make
+
+echo -e "\n Valid args: letters 10" 
+./crawler http://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../data/letters 10
+make clean
+make 
+
+echo -e "\n Valid args: letters 10 WITH VALGRIND" 
+make valgrind
 
 
+echo -e "\n Valid args: toScrape 0" 
+./crawler http://cs50tse.cs.dartmouth.edu/tse/toscrape/ ../data/toscrape 0
+make clean
+make 
 
+echo -e "\n Valid args: toScrape 1" 
+./crawler http://cs50tse.cs.dartmouth.edu/tse/toscrape/ ../data/toscrape 1
+make clean
+make 
 
+echo -e "\n Valid args: toScrape 2" 
+./crawler http://cs50tse.cs.dartmouth.edu/tse/toscrape/ ../data/toscrape 2
+make clean
+make 
 
+echo -e "\n Valid args: toScrape 3" 
+./crawler http://cs50tse.cs.dartmouth.edu/tse/toscrape/ ../data/toscrape 3
+make clean
+make 
 
+echo -e "\n Valid args: wikipedia 0" 
+./crawler http://cs50tse.cs.dartmouth.edu/tse/wikipedia/ ../data/wikipedia 1
+make clean
+make 
 
+echo -e "\n Valid args: wikipedia 1" 
+./crawler http://cs50tse.cs.dartmouth.edu/tse/wikipedia/ ../data/wikipedia 1
+make clean
+make 
 
-
+echo -e "\n Valid args: wikipedia 2" 
+./crawler http://cs50tse.cs.dartmouth.edu/tse/wikipedia/ ../data/wikipedia 2
