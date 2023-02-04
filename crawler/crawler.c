@@ -25,17 +25,19 @@ while there are more webpages in the bag:
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include "../libcs50/bag.h"
 #include "../libcs50/hashtable.h"
 #include "../libcs50/webpage.h"
 #include "../common/pagedir.h"
 
+static void logr(const char *word, const int depth, const char *url);
 int main(const int argc, char* argv[]);
 static void parseArgs(const int argc, char* argv[],
                       char** seedURL, char** pageDirectory, int* maxDepth);
 static void crawl(char* seedURL, char* pageDirectory, const int maxDepth);
 static void pageScan(webpage_t* page, bag_t* pagesToCrawl, hashtable_t* pagesSeen);
-void delete(void*item);
+void deleteWeb(void*item);
 //takes 3 args- seedURL pageDirectory and maxDepth
 
 int main(const int argc, char* argv[]){
@@ -63,8 +65,9 @@ static void parseArgs(const int argc, char* argv[],
     printf("Error: Invalid or External URL");
     exit(1);
   }
-  //call paagedir_init 
-  if(pagedir_init(argv[2]) != true){
+  //call paagedir_init
+  *pageDirectory = argv[2];
+  if(pagedir_init(*pageDirectory) != true){
     exit(1);
   }
   //validate depth
@@ -90,31 +93,33 @@ while bag is not empty
 delete the hashtable
 delete the bag*/
 static void crawl(char* seedURL, char* pageDirectory, const int maxDepth){
-  hashtable_t* urlHash = hashtable_new(200);
-  hashtable_insert(urlHash, seedURL, "");
+  hashtable_t* pagesSeen = hashtable_new(200);
+  hashtable_insert(pagesSeen, seedURL, "");
   bag_t* pageBag = bag_new();
-  webpage_t* seedPage = webpage_new(seedURL, maxDepth, NULL);
+  webpage_t* seedPage = webpage_new(seedURL, 0, NULL);
   bag_insert(pageBag, seedPage);
 
   webpage_t* currentPage = bag_extract(pageBag); 
-  int pagesSeen = 0;
+  int docID = 1; 
   while (currentPage != NULL){
     if(webpage_fetch(currentPage)==false){
       printf("Error: Webpage Fetch Failed.");
       exit(0);
     }
     else{
-      pagedir_save(currentPage, pageDirectory, pagesSeen);
-      if (webpage_getDepth(currentPage)<10){
-        pageScan(currentPage, pageBag, urlHash);
+      pagedir_save(currentPage, pageDirectory, docID);
+      docID ++;
+      //printf("Current Depth:%d : Max Depth: %d", webpage_getDepth(currentPage), maxDepth);
+      if (webpage_getDepth(currentPage) < maxDepth){
+        pageScan(currentPage, pageBag, pagesSeen);
       }
       webpage_delete(currentPage);
     }
-    pagesSeen ++;
     currentPage = bag_extract(pageBag); 
   }
-  hashtable_delete(urlHash, delete);
-  bag_delete(pageBag, delete);
+  return; 
+  hashtable_delete(pagesSeen, webpage_delete);
+  bag_delete(pageBag, NULL);
 
   return;
 
@@ -135,20 +140,25 @@ static void crawl(char* seedURL, char* pageDirectory, const int maxDepth){
 
 static void pageScan(webpage_t* page, bag_t* pagesToCrawl, hashtable_t* pagesSeen){
   int pos = 0;
-  const int newDepth = webpage_getDepth(page) + 1;
-  char* nextURL = webpage_getNextURL(page, &pos);
-
-  while (nextURL!= NULL){
+  //const int newDepth = webpage_getDepth(page);
+  char* nextURL;
+  while ((nextURL = webpage_getNextURL(page, &pos))!= NULL){
     const char* constURL = nextURL;
     if (isInternalURL(constURL) == false){
-      return;
+      logr("IgnExt", webpage_getDepth(page), nextURL);
+      free(nextURL);
     }
-    if (hashtable_insert(pagesSeen, constURL, "") == true){
-      webpage_t* newPage = webpage_new(nextURL, newDepth, NULL);
-      bag_insert(pagesToCrawl, newPage); 
+    else{
+      if (hashtable_insert(pagesSeen, constURL, "") == true){
+        webpage_t* newPage = webpage_new(nextURL, webpage_getDepth(page) + 1, NULL);
+        bag_insert(pagesToCrawl, newPage);
+        logr("Added", webpage_getDepth(newPage), nextURL);
+      }
+      else{
+        logr("IgnDupl", webpage_getDepth(page), nextURL);
+        free(nextURL);
+      }
     }
-    free(nextURL);
-    nextURL = webpage_getNextURL(page, &pos);
   }
   return; 
 }
@@ -156,6 +166,12 @@ static void pageScan(webpage_t* page, bag_t* pagesToCrawl, hashtable_t* pagesSee
 //outputs a page to the the appropriate file
 //pageSaver
 
-void delete(void*item){
+void deleteWeb(void*item){
   return;
+}
+
+// log one word (1-9 chars) about a given url                                   
+static void logr(const char *word, const int depth, const char *url)
+{
+  printf("%2d %*s%9s: %s\n", depth, depth, "", word, url);
 }

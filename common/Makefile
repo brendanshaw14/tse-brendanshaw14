@@ -1,28 +1,51 @@
-# Makefile for the TSE Common directory
-# Builds and compiles the "common" library
+# Makefile for the common directory
+# Builds and compiles files for common
 #
-#
-# Brendan Shaw, February 2023 
+# Ashley Goh, Dartmouth CS 50, January 2023
 
+# object files and the target library
+#OBJS = pagedir.o ../libcs50/file.o ../libcs50/webpage.o ../libcs50/mem.o
+#LIB = common.a
 
-#object files
+#FLAGS = -lm
+#CFLAGS = -Wall -pedantic -std=c11 -ggdb $(FLAGS)
+#CC = gcc
+#MAKE = make
+
+## build $(LIB) by archiving object files
+#$(LIB): $(OBJS)
+#ar cr $@ $^
+
+## dependencies: object files depend on header files
+#pagedir.o: pagedir.h ../libcs50/webpage.h ../libcs50/file.h
+#../libcs50/file.o: ../libcs50/file.h
+#../libcs50/webpage.o: ../libcs50/file.h ../libcs50/webpage.h ../libcs50/mem.h
+#../libcs50/mem.o: ../libcs50/mem.h
+
+#.PHONY: clean
+
+#clean:
+#rm -f core
+#rm -f $(LIB) *~ *.o
+
 L = ../libcs50
+CC = gcc
+CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$L
+
 OBJS = pagedir.o
 LIB = common.a 
-LLIBS = $L/libcs50.a
-FLAGS = -lm
-CFLAGS = -Wall -pedantic -std=c11 -ggdb $(FLAGS)
-CC = gcc 
-MAKE = make 
+LIBS = -lm
+LLIBS = $L/libcs50-given.a 
 
-#build $(LIB) by archiving object files
-$(LIB): $(OBJS) $(LLIBS)
-	ar cr $@ $^
+.PHONY: clean
 
-#Dependencies: object files depend on header files
-pagedir.o: pagedir.h $L/mem.h $L/webpage.h
+$(LIB): $(OBJS)
+	ar cr $(LIB) $(OBJS) $(LLIBS) $(LIBS)
 
-#clean up
+pagedir.o: $L/webpage.h pagedir.h 
+
 clean: 
+	rm -rf *.dSYM 
+	rm -f common.a 
+	rm -f *~ *.o
 	rm -f core
-	rm -f(LIB) *~ *.o

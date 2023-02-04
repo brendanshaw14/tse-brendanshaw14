@@ -3,12 +3,15 @@
 Author: Brendan Shaw 
 
 */
-
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include "../libcs50/bag.h"
 #include "../libcs50/hashtable.h"
 #include "../libcs50/webpage.h"
+#include "../libcs50/mem.h"
+#include <string.h>
+
 
 
 bool pagedir_init(const char* pageDirectory);
