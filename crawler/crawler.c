@@ -117,9 +117,8 @@ static void crawl(char* seedURL, char* pageDirectory, const int maxDepth){
     }
     currentPage = bag_extract(pageBag); 
   }
-  return; 
-  hashtable_delete(pagesSeen, webpage_delete);
-  bag_delete(pageBag, NULL);
+  hashtable_delete(pagesSeen, NULL);
+  bag_delete(pageBag, webpage_delete);
 
   return;
 

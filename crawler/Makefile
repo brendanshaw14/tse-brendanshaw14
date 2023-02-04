@@ -29,10 +29,10 @@ crawler: $(OBJS) $(LLIBS) $(CLIBS) common.a
 crawler.o: ./crawler.c $L/file.h $L/webpage.h $L/mem.h $C/pagedir.h $L/bag.h $L/hashtable.h $L/set.h $L/hash.h
 
 test: 
-	./crawler HTTP://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../data/letters 2
+	./crawler HTTP://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../data/letters 10
 
 valgrind: 
-	valgrind --leak-check=full --show-leak-kinds=all ./crawler HTTP://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../data/letters 2
+	valgrind --leak-check=full --show-leak-kinds=all ./crawler HTTP://cs50tse.cs.dartmouth.edu/tse/letters/index.html ../data/letters 10
 
 clean:
 	rm -f crawler

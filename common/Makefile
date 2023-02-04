@@ -1,7 +1,7 @@
 # Makefile for the common directory
 # Builds and compiles files for common
 #
-# Ashley Goh, Dartmouth CS 50, January 2023
+# Brendan Shaw, Dartmouth CS 50, January 2023
 
 # object files and the target library
 #OBJS = pagedir.o ../libcs50/file.o ../libcs50/webpage.o ../libcs50/mem.o
