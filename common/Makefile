@@ -1,37 +1,15 @@
-# Makefile for the common directory
-# Builds and compiles files for common
-#
-# Brendan Shaw, Dartmouth CS 50, January 2023
+ # Common Directory Makefile
+ # Compiles the common directory 
+ # Author: Brendan Shaw: with inspiration from Lab3 makefiles & TA's
+ #
+ # Dartmouth CS50, February 2023
+ #
+ # Usage: `make` to compile- not needed if running the crawler makefile, which will run this makefile automatically.
 
-# object files and the target library
-#OBJS = pagedir.o ../libcs50/file.o ../libcs50/webpage.o ../libcs50/mem.o
-#LIB = common.a
-
-#FLAGS = -lm
-#CFLAGS = -Wall -pedantic -std=c11 -ggdb $(FLAGS)
-#CC = gcc
-#MAKE = make
-
-## build $(LIB) by archiving object files
-#$(LIB): $(OBJS)
-#ar cr $@ $^
-
-## dependencies: object files depend on header files
-#pagedir.o: pagedir.h ../libcs50/webpage.h ../libcs50/file.h
-#../libcs50/file.o: ../libcs50/file.h
-#../libcs50/webpage.o: ../libcs50/file.h ../libcs50/webpage.h ../libcs50/mem.h
-#../libcs50/mem.o: ../libcs50/mem.h
-
-#.PHONY: clean
-
-#clean:
-#rm -f core
-#rm -f $(LIB) *~ *.o
-
+#libs and flags
 L = ../libcs50
 CC = gcc
 CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$L
-
 OBJS = pagedir.o
 LIB = common.a 
 LIBS = -lm
@@ -39,11 +17,14 @@ LLIBS = $L/libcs50-given.a
 
 .PHONY: clean
 
+#common dependencies
 $(LIB): $(OBJS)
 	ar cr $(LIB) $(OBJS) $(LLIBS) $(LIBS)
 
+#pagedir dependencies 
 pagedir.o: $L/webpage.h pagedir.h 
 
+#cleanup
 clean: 
 	rm -rf *.dSYM 
 	rm -f common.a 
