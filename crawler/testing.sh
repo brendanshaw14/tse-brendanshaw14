@@ -69,18 +69,8 @@ echo -e "\n Valid args: toScrape 1"
 make clean
 make 
 
-echo -e "\n Valid args: toScrape 2" 
-./crawler http://cs50tse.cs.dartmouth.edu/tse/toscrape/ ../data/toscrape 2
-make clean
-make 
-
-echo -e "\n Valid args: toScrape 3" 
-./crawler http://cs50tse.cs.dartmouth.edu/tse/toscrape/ ../data/toscrape 3
-make clean
-make 
-
 echo -e "\n Valid args: wikipedia 0" 
-./crawler http://cs50tse.cs.dartmouth.edu/tse/wikipedia/ ../data/wikipedia 1
+./crawler http://cs50tse.cs.dartmouth.edu/tse/wikipedia/ ../data/wikipedia 0
 make clean
 make 
 
@@ -89,5 +79,3 @@ echo -e "\n Valid args: wikipedia 1"
 make clean
 make 
 
-echo -e "\n Valid args: wikipedia 2" 
-./crawler http://cs50tse.cs.dartmouth.edu/tse/wikipedia/ ../data/wikipedia 2
