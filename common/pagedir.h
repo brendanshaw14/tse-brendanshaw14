@@ -43,8 +43,23 @@ bool pagedir_init(const char* pageDirectory);
 void pagedir_save(const webpage_t* page, const char* pageDirectory, const int docID);
 
 /***************pagedir_validate*****************/
-//validates that there is a .crawler file within the given directory
+/* Test to see if there is a .crawler file in the given pageDirectory, ie. that the crawler created the files. 
+ *
+ * Caller provides:
+ *  valid pageDirectory to verify
+ * We return:
+ *   True if the .crawler file exists
+ *   False otherwise
+*/ 
 bool pagedir_validate(const char* pageDirectory);
 
 /***************pagedir_load************/
-void pagedir_load();
+/* Load a webpage from a given pagedir file
+ *
+ * Caller provides:
+ *  valid pageDirectory to verify
+ * We return:
+ *   True if the .crawler file exists
+ *   False otherwise
+*/
+webpage_t* pagedir_load(FILE* fp);

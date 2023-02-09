@@ -1,8 +1,14 @@
-/* INDEXER
+/* INDEXER- a c program to read web crawler file output and create an inverted index
 
-Author: Brendan Shaw 
+Author: Brendan Shaw, CS50- Winter 2023
 
-CS50- Winter 2023
+Inputs: file input from a specified .crawler directory with crawler outputs
+Output: file output to specified indexPageDir to save
+
+Compile: use `make` to compile indexer and common library, `make test` to test on the "letters" crawler output file in the "data" directory, 
+  and `make valgrind` for the same test command with valgrind output`
+
+Usage: ./indexer <pageDirectory> <indexFileDirectory>
 
 See implementation spec for more information*/
 
@@ -22,13 +28,9 @@ See implementation spec for more information*/
 //function headers
 index_t* indexBuild(const char* pageDirectory);
 void indexPage(index_t* index, webpage_t* webpage, int docID);
-webpage_t* pageFromFile(FILE* fp);
 
 //parse the command line, validate parameters, initialize other modules
 //call indexBuild, with pageDirectory
-
-//parse arguents and call other modules
-//indexer pageDirectory indexFilename
 int main(const int argc, char* argv[]){
     //validate two args
     if (argc != 3){
@@ -47,19 +49,15 @@ int main(const int argc, char* argv[]){
       printf("Error: Failed to create/open indexFile");
       exit(1);
     }
-    index_t* index = indexBuild(argv[1]);
-    index_print(index, stdout);
+    //build the index!
+    index_t* index = indexBuild(argv[1]); 
+    index_print(index, fp); // print the index to the file
     fclose(fp);
-    index_delete(index);
+    index_delete(index); // delete it
   return 0;
 }
 
 //builds an in-memory index from webpage files it finds in the pageDirectory;
-//creates a new 'index' object
-  //loops over document ID numbers, counting from 1
-    //loads a webpage from the document file 'pageDirectory/id'
-    //if successful, 
-      //passes the webpage and docID to indexPage
 index_t* indexBuild(const char* pageDirectory){
   //make new index with 500 spots to hold words
   index_t* pageIndex = index_new(500);
@@ -70,66 +68,40 @@ index_t* indexBuild(const char* pageDirectory){
   //open the file and send to pageFromFile
   webpage_t* currentPage;
   FILE* fp = fopen(pageDirName, "r");
+  //loop through the pages
   while (fp != NULL){
-    currentPage = pageFromFile(fp);
-    if (currentPage != NULL){
+    currentPage = pagedir_load(fp);
+    if (currentPage != NULL){ //ensure page was created corretly
       indexPage(pageIndex, currentPage, docID);
     }
-    webpage_delete(currentPage);
+    else { //exit if failure
+      printf("Failed to create webpage from file");
+      exit(1);
+    }
+    webpage_delete(currentPage); //delete current 
     fclose(fp);
-    docID++; 
-    sprintf(pageDirName, "%s/%d", pageDirectory, docID);
-    fp = fopen(pageDirName, "r");
+    docID++; //go to the next file
+    sprintf(pageDirName, "%s/%d", pageDirectory, docID); //make its name
+    fp = fopen(pageDirName, "r"); //open it with that name
   }
-  //free pagedir nme and index
+  //free pagedir name and return the final index 
   mem_free(pageDirName);
   return pageIndex;
 }
 
-//which scans a webpage document to add its words to the index.//
- //steps through each word of the webpage,
-   //skips trivial words (less than length 3),
-   //normalizes the word (converts to lower case),
-   //looks up the word in the index,
-     //adding the word to the index if needed
-   //increments the count of occurrences of this word in this docID
+//scans a webpage document to add its words to the index
 void indexPage(index_t* index, webpage_t* webpage, int docID){
   //loop through words
   int position = 0;
-  char* word; //FREE THIS LATER
+  char* word; 
   while ((word = webpage_getNextWord(webpage, &position)) != NULL){
-   if (strlen(word) >= 3){
-    char* normalizedWord = word_normalize(word); //FREE THIS LATER
-    printf("Saving %s with docID %d\n", normalizedWord, docID);
-    index_save(index, normalizedWord, docID);
-    mem_free(normalizedWord);
+   if (strlen(word) >= 3){ //make sure it's longer than 2
+    char* normalizedWord = word_normalize(word); //normalize 
+    index_save(index, normalizedWord, docID); //add to index
+    mem_free(normalizedWord); 
    }
    mem_free(word);
   }
     return;
 }
-
-//returns a webpage from a page file 
-webpage_t* pageFromFile(FILE* fp){
-  //test NULL
-  if (fp == NULL){
-    printf("Error: Unable to read page file");
-    exit(1);
-  }
-  //get URL
-  char* URL = file_readLine(fp);
-  //get the string and make a pointer to store the int in 
-  char* depthString = file_readLine(fp);
-  int depth;
-  sscanf(depthString, "%d", &depth);
-  //make page
-  webpage_t* newPage = webpage_new(URL, depth, NULL);
-  if (webpage_fetch(newPage) == true){
-    mem_free(depthString);
-    return newPage;
-  }
-  else{
-    return NULL;
-  }
-} 
 

@@ -1,9 +1,15 @@
-/* Index Module for the Indexer component of the TSE lab 
+/* INDEX- a c module to provide an index structure. 
+    The structure: holds a hashtable of word keys paired to counter items that,
+    for each word, hold a set of counters that pair doc id's to the number of
+    times that the word appears in that page.
 
-Author: Brendan Shaw
+Author: Brendan Shaw, CS50- Winter 2023
 
-CS50- Winter 2023
-*/
+Compile: use `make` in the indexer directory to compile indexer and common library,
+    or use `make` within the common library to compile the common lib (including index). 
+
+See index.h Header file for more information. */
+
 //includes
 #include <stdlib.h>
 #include <stdio.h>
@@ -14,7 +20,7 @@ CS50- Winter 2023
 #include "../libcs50/counters.h"
 #include "../common/pagedir.h"
 
-
+//the index structure
 typedef struct index {
     hashtable_t* wordIndex;
 }  index_t;
@@ -24,8 +30,7 @@ typedef struct index {
 void index_printLine(void* arg, const int key, const int count);
 void iterate_helper(void*arg, const char* key, void* item);
 
-
-
+/***********index_new************/
 //make a new index with the given number of slots
 index_t* index_new(const int num_slots){  
     if (num_slots <= 0){
@@ -43,15 +48,9 @@ index_t* index_new(const int num_slots){
         
     }
 }
-/*
-if the word is already in the index:
-    add the docID to the counter or increment it if it already exists
-else (the word isn't in the index)
-    add the word to the index's hashtable
-    make a new counters for that word
-        counters add the docID (should make a counter in the counterset with that docid and a count of 1)
 
-*/
+/***********index_save************/
+//saves the input word into the index at the docId, making a new counter if not there or incrementing if already there
 void index_save(index_t* index, const char* word, const int docID){
     //search the index's hashtable for the given word
     counters_t* wordCounter = hashtable_find(index -> wordIndex, word);
@@ -71,17 +70,17 @@ void index_save(index_t* index, const char* word, const int docID){
     return;
 }
 
-//print out the index
-/*
-iterate through the hashtable, 
-*/
+/***********index_save************/
+//prints out the index to the given file in the indexPage format:
+//that is, each line contains a word followed by alternating docIDs with the 
+//number of times that the word occurs in that doc.
 void index_print(index_t* index, FILE* fp){
     hashtable_t* hashtable = index -> wordIndex;
     hashtable_iterate(hashtable, fp, iterate_helper);
 }
 
-
-//delete the index
+/***********index_delete************/
+//deletes the entire index from memory.
 void index_delete(index_t* index){
     hashtable_t* hashtable = index -> wordIndex;
     hashtable_delete(hashtable, (void (*)(void*))counters_delete);
@@ -89,6 +88,7 @@ void index_delete(index_t* index){
     return;
 }
 
+/*iterate_helper- helper function for the index_print function*/
 //receives arg (fp), key (word), and item (counters), prints the word, calls counters iterate
 void iterate_helper(void*arg, const char* key, void* item){
    fprintf(arg, "%s ", key); //prints the word to the file
@@ -96,6 +96,8 @@ void iterate_helper(void*arg, const char* key, void* item){
    fprintf(arg, "\n");
 }
 
+
+/*index_printLine- second helper function for the index_print function within the iterate_helper function */
 //receives arg (fp), key (docID), and item (wordcount)
 void index_printLine(void* arg, const int key, const int count){
    fprintf(arg, "%d %d ", key, count); // prints the docID followed by the word'scount with a space in between
