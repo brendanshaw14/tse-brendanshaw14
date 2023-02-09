@@ -42,8 +42,9 @@ bool pagedir_init(const char* pageDirectory);
  */
 void pagedir_save(const webpage_t* page, const char* pageDirectory, const int docID);
 
+/***************pagedir_validate*****************/
+//validates that there is a .crawler file within the given directory
+bool pagedir_validate(const char* pageDirectory);
 
-
-
-
-
+/***************pagedir_load************/
+void pagedir_load();

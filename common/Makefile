@@ -10,7 +10,7 @@
 L = ../libcs50
 CC = gcc
 CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$L
-OBJS = pagedir.o
+OBJS = pagedir.o index.o word.o
 LIB = common.a 
 LIBS = -lm
 LLIBS = $L/libcs50-given.a 
@@ -23,6 +23,9 @@ $(LIB): $(OBJS)
 
 #pagedir dependencies 
 pagedir.o: $L/webpage.h pagedir.h 
+
+#index dependencies
+index.o: $L/hashtable.h $L/counters.h 
 
 #cleanup
 clean: 
