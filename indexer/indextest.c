@@ -18,7 +18,7 @@
 #include <math.h>
 #include "indexer.h"
 
-index_t* indexFromFile(FILE* fp);
+index_t* indexFromFile(FILE* in);
 
 int main(const int argc, char* argv[]){
   if (argc !=3){
@@ -39,27 +39,30 @@ int main(const int argc, char* argv[]){
   }
   //make the index from a page
   index_t* index = indexFromFile(in);
+  index_print(index, out);
+  index_delete(index);
+  fclose(out);
+  fclose(in);
   return 0;
 }
-/*
- make an index
-  for each line in the file
-    make a variable to store that word
-    make two integers, docID and wordcount
-      while fscanf("%d %d", docID, wordcount) ==2
-    */
-index_t* indexFromFile(FILE* fp){
-  index_t* newIndex = index_new(file_numLines(fp));
-  char* currentLine; //FREE THIS LATER
+
+//creates an index from the given indexer output file
+index_t* indexFromFile(FILE* in){
+  index_t* newIndex = index_new(file_numLines(in));
   char* word;
-  int* docID;
-  int* num;
-  while ((currentLine = file_readLine(fp)) != NULL && (word = file_readWord(fp)) != NULL){
-    printf("Found %s", word);
-    while (sscanf(currentLine, "%d %d", docID, num)== 2){
-      printf(" %d %d", *docID, *num);
-    }
-    printf("\n");
+  int* docID = malloc(sizeof(int));
+  int* num = malloc(sizeof(int));
+  while ((word = file_readWord(in)) != NULL){
+      printf("%s ", word);
+      while(fscanf(in, "%d %d", docID, num) == 2){
+        for (int i = 0; i < *num; i ++){
+          index_save(newIndex, word, *docID);
+        }
+      }
+      mem_free(word);
   }
+  mem_free(word);
+  mem_free(docID);
+  mem_free(num);
   return newIndex;
 }

@@ -10,7 +10,7 @@
 L = ../libcs50
 C = ../common
 OBJS = indexer.o
-TESTOBJS = indexertest.o
+TESTOBJS = indextest.o
 LIB = common.a
 
 #flags & other
@@ -22,7 +22,7 @@ FLAGS = -lm
 
 .PHONY: all clean test
 
-all: common.a indexer indexertest 
+all: common.a indexer indextest 
 
 #makes the common library to actualize changes to pagedir
 common.a:
@@ -32,23 +32,30 @@ common.a:
 indexer: $(OBJS) $(LLIBS) $(CLIBS) 
 	$(CC) $(CFLAGS) $(OBJS) $(CLIBS) $(LLIBS) $(FLAGS) -o indexer
 
-indexertest: $(TESTOBJS) $(LLIBS) $(CLIBS) 
-	$(CC) $(CFLAGS) $(TESTOBJS) $(CLIBS) $(LLIBS) $(FLAGS) -o indexertest
+indextest: $(TESTOBJS) $(LLIBS) $(CLIBS) 
+	$(CC) $(CFLAGS) $(TESTOBJS) $(CLIBS) $(LLIBS) $(FLAGS) -o indextest
 
 # dependencies: object files depend on header files
 indexer.o: ./indexer.c $(LLIBS) $(CLIBS)
 
-indexertest.o: ./indexertest.c $(LLIBS) $(CLIBS)
+indextest.o: ./indextest.c $(LLIBS) $(CLIBS)
 
 # make test for this //test: 
 test: 
 	./indexer ../data/letters ../data/indexFileMakeTest
 
 tester: 
-	./indexertest ../data/indexFileMakeTest ../data/indexFileMakeTestOut
-#make valgrind for this
+	./indextest ../data/indexFileMakeTest ../data/indexFileMakeTestOut
+
+#make valgrind for indexer
 valgrind: 
 	valgrind --leak-check=full --show-leak-kinds=all ./indexer ../data/letters ../data/indexFileMakeTest
+
+#make valgrind for indextest
+testvalgrind: 
+	valgrind --leak-check=full --show-leak-kinds=all ./indextest ../data/indexFileMakeTest ../data/indexFileMakeTestOut
+
+
 #cleanup!!
 clean:
 	rm -f *~ *.o
