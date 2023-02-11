@@ -1,4 +1,4 @@
-/* indexertest.c- reads from an indexer output file and then rebuilds the index from it, then ouputting it back into the file. 
+/* indextest.c- reads from an indexer output file and then rebuilds the index from it, then ouputting it back into the file. 
 *
 * Author: Brendan Shaw- February 2023
 * CS50- 23W
@@ -53,7 +53,6 @@ index_t* indexFromFile(FILE* in){
   int* docID = malloc(sizeof(int));
   int* num = malloc(sizeof(int));
   while ((word = file_readWord(in)) != NULL){
-      printf("%s ", word);
       while(fscanf(in, "%d %d", docID, num) == 2){
         for (int i = 0; i < *num; i ++){
           index_save(newIndex, word, *docID);

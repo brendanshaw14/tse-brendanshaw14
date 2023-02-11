@@ -1,0 +1,204 @@
+bash -v testing.sh
+module () {  _module_raw "$@" 2>&1
+}
+ml () {  module ml "$@"
+}
+_module_raw () {  eval `/usr/bin/tclsh8.6 /usr/lib/x86_64-linux-gnu/modulecmd.tcl bash "$@"`;
+ _mlstatus=$?;
+ return $_mlstatus
+}
+#Testing file for the indexer and index modules for the CS50 TSE. 
+##Author: Brendan Shaw, February 2023
+
+#clean and make
+make clean
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+rm -f *~ *.o
+rm -rf *.dSYM
+rm -f *vgcore
+rm -f ../data/indexFileMakeTest
+rm -f ../data/indexFileMakeTestOut
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+make
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+cd ../common; make
+make[2]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/common'
+make[2]: 'common.a' is up to date.
+make[2]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/common'
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common   -c -o indexer.o indexer.c
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common indexer.o ../common/common.a ../libcs50/libcs50.a -lm -o indexer
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common   -c -o indextest.o indextest.c
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common indextest.o ../common/common.a ../libcs50/libcs50.a -lm -o indextest
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+
+#no arguments
+./indexer
+Error: Invalid number of args.
+#one argument 
+./indexer onearg
+Error: Invalid number of args.
+#more arguments
+./indexer onearg twoarg threearg
+Error: Invalid number of args.
+#invalid pageDir
+./indexer ../data/fakepath ../data/indexFileMakeTest
+Error: specified pageDir doesn't have .crawler file
+#invalid indexFile
+./indexer ../data/letters fakepath
+
+#invalid indexFile - read only directory
+make clean
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+rm -f *~ *.o
+rm -rf *.dSYM
+rm -f *vgcore
+rm -f ../data/indexFileMakeTest
+rm -f ../data/indexFileMakeTestOut
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+make 
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+cd ../common; make
+make[2]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/common'
+make[2]: 'common.a' is up to date.
+make[2]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/common'
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common   -c -o indexer.o indexer.c
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common indexer.o ../common/common.a ../libcs50/libcs50.a -lm -o indexer
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common   -c -o indextest.o indextest.c
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common indextest.o ../common/common.a ../libcs50/libcs50.a -lm -o indextest
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+chmod 555 ../data
+./indexer ../data/letters ../data/indexFileMakeTest
+Error: Failed to create/open indexFilechmod 775 ../data
+
+#invalid indexFile - read only file REMOVED THIS TEST BECUASE MY PROGRAM MAKES THE FILE
+#chmod 444 ../data/indexFileMakeTest
+#./indexer ../data/letters ../data/indexFileMakeTest
+#chmod 666 ../data/indexFileMakeTest
+
+##letters
+make clean
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+rm -f *~ *.o
+rm -rf *.dSYM
+rm -f *vgcore
+rm -f ../data/indexFileMakeTest
+rm -f ../data/indexFileMakeTestOut
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+make
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+cd ../common; make
+make[2]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/common'
+make[2]: 'common.a' is up to date.
+make[2]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/common'
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common   -c -o indexer.o indexer.c
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common indexer.o ../common/common.a ../libcs50/libcs50.a -lm -o indexer
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common   -c -o indextest.o indextest.c
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common indextest.o ../common/common.a ../libcs50/libcs50.a -lm -o indextest
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+./indexer ../data/letters ../data/indexFileMakeTest
+./indextest ../data/indexFileMakeTest ../data/indexFileMakeTestOut
+#Compare letters: output below
+~/cs50-dev/shared/tse/indexcmp ../data/indexFileMakeTest ../data/indexFileMakeTestOut
+make clean
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+rm -f *~ *.o
+rm -rf *.dSYM
+rm -f *vgcore
+rm -f ../data/indexFileMakeTest
+rm -f ../data/indexFileMakeTestOut
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+make
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+cd ../common; make
+make[2]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/common'
+make[2]: 'common.a' is up to date.
+make[2]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/common'
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common   -c -o indexer.o indexer.c
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common indexer.o ../common/common.a ../libcs50/libcs50.a -lm -o indexer
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common   -c -o indextest.o indextest.c
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common indextest.o ../common/common.a ../libcs50/libcs50.a -lm -o indextest
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+
+#toscrape
+./indexer ../data/toscrape ../data/indexFileMakeTest
+./indextest ../data/indexFileMakeTest ../data/indexFileMakeTestOut
+#Compare letters: output below
+~/cs50-dev/shared/tse/indexcmp ../data/indexFileMakeTest ../data/indexFileMakeTestOut
+make clean
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+rm -f *~ *.o
+rm -rf *.dSYM
+rm -f *vgcore
+rm -f ../data/indexFileMakeTest
+rm -f ../data/indexFileMakeTestOut
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+make
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+cd ../common; make
+make[2]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/common'
+make[2]: 'common.a' is up to date.
+make[2]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/common'
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common   -c -o indexer.o indexer.c
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common indexer.o ../common/common.a ../libcs50/libcs50.a -lm -o indexer
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common   -c -o indextest.o indextest.c
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common indextest.o ../common/common.a ../libcs50/libcs50.a -lm -o indextest
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+
+#valgrinds
+make clean
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+rm -f *~ *.o
+rm -rf *.dSYM
+rm -f *vgcore
+rm -f ../data/indexFileMakeTest
+rm -f ../data/indexFileMakeTestOut
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+make
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+cd ../common; make
+make[2]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/common'
+make[2]: 'common.a' is up to date.
+make[2]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/common'
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common   -c -o indexer.o indexer.c
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common indexer.o ../common/common.a ../libcs50/libcs50.a -lm -o indexer
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common   -c -o indextest.o indextest.c
+gcc -Wall -pedantic -std=c11 -ggdb -I../libcs50 -I../common indextest.o ../common/common.a ../libcs50/libcs50.a -lm -o indextest
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+#indexer
+make valgrind
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+valgrind --leak-check=full --show-leak-kinds=all ./indexer ../data/letters ../data/indexFileMakeTest
+==2785101== Memcheck, a memory error detector
+==2785101== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==2785101== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==2785101== Command: ./indexer ../data/letters ../data/indexFileMakeTest
+==2785101== 
+==2785101== 
+==2785101== HEAP SUMMARY:
+==2785101==     in use at exit: 0 bytes in 0 blocks
+==2785101==   total heap usage: 1,948 allocs, 1,948 frees, 330,045 bytes allocated
+==2785101== 
+==2785101== All heap blocks were freed -- no leaks are possible
+==2785101== 
+==2785101== For lists of detected and suppressed errors, rerun with: -s
+==2785101== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+#indextest
+make testvalgrind
+make[1]: Entering directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'
+valgrind --leak-check=full --show-leak-kinds=all ./indextest ../data/indexFileMakeTest ../data/indexFileMakeTestOut
+==2785253== Memcheck, a memory error detector
+==2785253== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==2785253== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==2785253== Command: ./indextest ../data/indexFileMakeTest ../data/indexFileMakeTestOut
+==2785253== 
+==2785253== 
+==2785253== HEAP SUMMARY:
+==2785253==     in use at exit: 0 bytes in 0 blocks
+==2785253==   total heap usage: 160 allocs, 160 frees, 21,076 bytes allocated
+==2785253== 
+==2785253== All heap blocks were freed -- no leaks are possible
+==2785253== 
+==2785253== For lists of detected and suppressed errors, rerun with: -s
+==2785253== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+make[1]: Leaving directory '/thayerfs/home/f005670/cs50-dev/tse-brendanshaw14/indexer'

@@ -42,7 +42,7 @@ indextest.o: ./indextest.c $(LLIBS) $(CLIBS)
 
 # make test for this //test: 
 test: 
-	./indexer ../data/letters ../data/indexFileMakeTest
+	bash -v testing.sh
 
 tester: 
 	./indextest ../data/indexFileMakeTest ../data/indexFileMakeTestOut
@@ -62,3 +62,4 @@ clean:
 	rm -rf *.dSYM
 	rm -f *vgcore
 	rm -f ../data/indexFileMakeTest
+	rm -f ../data/indexFileMakeTestOut
