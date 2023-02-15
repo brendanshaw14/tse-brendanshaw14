@@ -20,10 +20,11 @@ CS50- Winter 2023
 
 //headers
 index_t* indexFromFile(FILE* indexFile);
-void getQueries(index_t* index);
+void getQueries(index_t* pageIndex);
 char** tokenizeQuery(char* input, int* numWords, char* output);
 bool verifyQuery(char** tokenizedQuery);
 void normalizeQuery(char** input, int numWords);
+void handleQuery(char** input, int numWords, index_t* pageIndex);
 
 
 //  ./querier pageDirectory indexFileName
@@ -51,19 +52,9 @@ int main(const int argc, char* argv[]){
         printf("Error: Unable to open indexFile\n");
     }
     index_t* index = indexFromFile(indexFile);
-
-    //getQueries(index);
-    char* input = "This is yet another example sentence with some query words";
-    char* output = mem_malloc(strlen(input)+1);
-    int* numWords = mem_malloc(sizeof(int));
-    char** tokenizedQuery = tokenizeQuery(input, numWords, output);
-    //normalizeQuery(tokenizedQuery, *numWords);
-    for (int i = 0; i < *numWords; i ++){
-        printf("%s\n", tokenizedQuery[i]);
-    }
-    mem_free(output);
-    mem_free(numWords);
-    mem_free(tokenizedQuery);
+    //get the new queries from the user
+    getQueries(index);
+   
     return 0;
 }
 
@@ -110,27 +101,27 @@ index_t* indexFromFile(FILE* indexFile){
         if true
             call parse query
 */
-void getQueries(index_t* index){
+void getQueries(index_t* pageIndex){
     //initial print statement
-    printf("Input your query here:");
+    printf("Type your search below:\n");
     //loop through the query lines
     char* inputLine;
     int* numWords = mem_malloc(sizeof(int));
     while ((inputLine = file_readLine(stdin)) != NULL){
-        printf("Input your query here:");
         char* output = mem_malloc(strlen(inputLine)+1);
         char** tokenizedQuery;
-        if ((tokenizedQuery = tokenizeQuery(inputLine, numWords, output)) != NULL){
-           normalizeQuery(tokenizedQuery, *numWords);
+        tokenizeQuery(inputLine, numWords, output);
+        if ((tokenizedQuery = tokenizeQuery(inputLine, numWords, output)) == NULL){
+            printf("Error: no search terms provided");
         }
-        for (int i = 0; i < *numWords; i ++){
-            //printf("%s ", tokenizedQuery[i]);
-        } 
+        normalizeQuery(tokenizedQuery, *numWords);
+        //handle the query
+        handleQuery(tokenizedQuery, *numWords, pageIndex);
         mem_free(inputLine);
-        mem_free(output);
         *numWords = 0;
     }
     mem_free(inputLine);
+    mem_free(numWords);
     
     return;
 }
@@ -146,7 +137,6 @@ char** tokenizeQuery(char* input, int* numWords, char* output){
     for (int i = 0; i < strlen(input); i ++){
         char currentChar = input[i];
         //if that character is a letter
-        printf("current char: %c\n", currentChar);
         if ((currentChar >= 'a' && currentChar <= 'z') || (currentChar >= 'A' && currentChar <= 'Z')){
            //if we haven't yet found a word, change inWord to true, add that letter to the new string
             if (inWord == false){
@@ -166,8 +156,8 @@ char** tokenizeQuery(char* input, int* numWords, char* output){
             //if we are coming out of a word, change inword to false and add the terminator
             if (inWord == true){
                 (*numWords)++;
-                charIndex ++;
                 output[charIndex] = '\0';
+                charIndex ++;
                 inWord = false;
             }
         }
@@ -181,9 +171,7 @@ char** tokenizeQuery(char* input, int* numWords, char* output){
     return outputArray;
 }
 
-/* strip whitespace and normalize 
-
-*/
+/* normalize all the words in the query array*/
 void normalizeQuery(char** input, int numWords){
     for (int i = 0; i < numWords; i ++){
         input[i] = word_normalize(input[i]);
@@ -191,3 +179,57 @@ void normalizeQuery(char** input, int numWords){
     return;
 }
 
+/* Handle the words in the query */
+void handleQuery(char** input, int numWords, index_t* pageIndex){
+    //test that neither the first nor last word is and or or
+    if ((strcmp(input[0], "and") == 0) || (strcmp(input[0], "or") == 0) || (strcmp(input[numWords-1], "and") == 0) || (strcmp(input[numWords-1], "or") == 0)){
+        printf("Error: First and last words of query cannot be operators. Try again.\n");
+    }
+    //for each word in the query
+    int index = 0;
+    counters_t* result = counters_new();
+    counters_t* temp = counters_new();
+    bool inAnd = false;
+    while (index < numWords){
+        countersMerge(temp, )
+        //if the word is and
+        if (strcmp(input[index], "and") == 0){
+            //make sure the next word isn't also and
+            if (strcmp(input[index], input[index+1]) == 0){
+                printf("Error: found two consecutive and operators \n");
+            }
+            inAnd = true;
+            while (inAnd == true){
+                
+            }
+        }
+        //if the word is or
+        if (strcmp(input[index], "or") == 0){
+            //make sure the next word isn't also and
+            if (strcmp(input[index], input[index+1]) == 0){
+                printf("Error: found two consecutive or operators \n");
+            }
+            inAnd = true;
+            while (inAnd == true){
+               if (in) 
+            }
+        }
+        index++;
+    }
+
+
+
+
+
+    return;
+}
+
+//merge the counters
+void countersMerge(counters_t* first, counters_t* second){
+    return;
+}
+
+//intersect the counters
+void countersIntersect(counters_t* first, counters_t* second){
+    return;
+}
