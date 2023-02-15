@@ -47,4 +47,4 @@ valgrind:
 clean:
 	rm -f *~ *.o
 	rm -rf *.dSYM
-	rm -f *vgcore
+	rm -f *.core
