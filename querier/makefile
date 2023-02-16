@@ -35,13 +35,12 @@ querier: $(OBJS) $(LLIBS) $(CLIBS)
 # dependencies: object files depend on header files
 querier.o: ./querier.c $(LLIBS) $(CLIBS)
 
-#querier.o: ./indextest.c $(LLIBS) $(CLIBS)
-
 test: 
 	./querier ../data/letters ../data/indexFileMakeTest
 
-#make valgrind for indexer
+#make valgrind for querier
 valgrind: 
+	valgrind --leak-check=full --show-leak-kinds=all ./querier ../data/letters ../data/indexFileMakeTest
 
 #cleanup!!
 clean:

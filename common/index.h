@@ -18,6 +18,11 @@ Compile: use `make` in the indexer directory to compile indexer and common libra
 //the structure
 typedef struct index index_t;
 
+typedef struct index {
+    hashtable_t* wordIndex;
+}  index_t;
+
+
 /**************** index_new ****************/
 /* Create a new index structure with the specified numeber of spots
  *
