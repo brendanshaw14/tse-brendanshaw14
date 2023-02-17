@@ -50,6 +50,9 @@ valgrind:
 
 fuzz: 
 	./fuzzquery ../data/indexFileMakeTest 10 1 | ./querier ../data/letters ../data/indexFileMakeTest
+
+fuzzgrind: 
+	./fuzzquery ../data/toscrape1Index 100 1 | valgrind --leak-check=full --show-leak-kinds=all ./querier /thayerfs/home/f005670/cs50-dev/shared/tse/output/toscrape-1 ../data/toscrape1Index
 #fuzzquery indexFile numQueries randomSeed
 #cleanup!!
 clean:
