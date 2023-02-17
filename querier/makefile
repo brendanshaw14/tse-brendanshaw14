@@ -22,7 +22,7 @@ FLAGS = -lm
 
 .PHONY: all clean test
 
-all: common.a querier  
+all: common.a querier fuzzquery 
 
 #makes the common library to actualize changes to pagedir
 common.a:
@@ -32,8 +32,14 @@ common.a:
 querier: $(OBJS) $(LLIBS) $(CLIBS) 
 	$(CC) $(CFLAGS) $(OBJS) $(CLIBS) $(LLIBS) $(FLAGS) -o querier
 
+fuzzquery: fuzzquery.o $(LLIBS) $(CLIBS) 
+	$(CC) $(CFLAGS) fuzzquery.o $(CLIBS) $(LLIBS) $(FLAGS) -o fuzzquery
+
 # dependencies: object files depend on header files
 querier.o: ./querier.c $(LLIBS) $(CLIBS)
+
+fuzzquery.o: ./fuzzquery.c $(LLIBS) $(CLIBS) 
+
 
 test: 
 	./querier ../data/letters ../data/indexFileMakeTest
@@ -42,6 +48,9 @@ test:
 valgrind: 
 	valgrind --leak-check=full --show-leak-kinds=all ./querier ../data/letters ../data/indexFileMakeTest
 
+fuzz: 
+	./fuzzquery ../data/indexFileMakeTest 10 1 | ./querier ../data/letters ../data/indexFileMakeTest
+#fuzzquery indexFile numQueries randomSeed
 #cleanup!!
 clean:
 	rm -f *~ *.o

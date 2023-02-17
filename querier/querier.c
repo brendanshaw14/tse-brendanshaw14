@@ -3,6 +3,9 @@
 Author: Brendan Shaw, February 2023
 CS50- Winter 2023
 
+See querier.h for detailed descriptions of methods and functions. 
+
+To use, make test. 
 */
 
 //includes
@@ -33,14 +36,6 @@ void printQueryResult(counters_t* result, char* pageDir);
 void getNumDocs(void* counter, const int docID, const int score);
 void getHighestScore(void* argstruct, const int docID, const int score);
 
-
-
-//  ./querier pageDirectory indexFileName
-/*  validate pageDir using pagedir_valdiate
-    validate indexfile by open attempt in read
-    call indexFromFile on the indexFile
-    pass that index to getQueries         
-*/
 
 int main(const int argc, char* argv[]){
     //check correct num args
@@ -134,6 +129,7 @@ void getQueries(index_t* pageIndex, char* pageDir){
         mem_free(output);
         *numWords = 0;
         printf("Type your search below:\n");
+        printf("_____________________________________\n");
     }
     mem_free(inputLine);
     mem_free(numWords);
@@ -199,7 +195,7 @@ void normalizeQuery(char** input, int numWords){
 void handleQuery(char** input, int numWords, index_t* pageIndex, char* pageDir){
     //test that neither the first nor last word is and or or
     if ((strcmp(input[0], "and") == 0) || (strcmp(input[0], "or") == 0) || (strcmp(input[numWords-1], "and") == 0) || (strcmp(input[numWords-1], "or") == 0)){
-        printf("Error: First and last words of query cannot be operators. Try again.\n");
+        printf("Error: First and last words of query cannot be operators.\n");
         return;
     }
     //for each word in the query
@@ -337,7 +333,6 @@ void printQueryResult(counters_t* result, char* pageDir){
             mem_free(URL);
             fclose(fp);
         }
-
     }
     return;
 }
