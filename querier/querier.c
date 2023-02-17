@@ -26,9 +26,13 @@ bool verifyQuery(char** tokenizedQuery);
 void normalizeQuery(char** input, int numWords);
 void handleQuery(char** input, int numWords, index_t* pageIndex);
 void countersMerge(counters_t* result, counters_t* temp);
-void countersIntersect(counters_t* temp, counters_t* new);
 void mergeHelper(void* result, const int key, const int tempCount);
-void intersectHelper(void* result, const int tempKey, const int tempCount);
+void countersIntersect(counters_t* temp, counters_t* new);
+void intersectHelperOne(void* temp, const int newKey, const int newCount);
+void intersectHelperTwo(void* new, const int tempKey, const int tempCount);
+void printQueryResult(counters_t* result);
+void getNumDocs(void* counter, const int docID, const int score);
+void getHighestScore(void* argstruct, const int docID, const int score);
 
 
 
@@ -57,27 +61,8 @@ int main(const int argc, char* argv[]){
         printf("Error: Unable to open indexFile\n");
     }
 
-    index_t* index;
-    index = indexFromFile(indexFile);
+    index_t* index = indexFromFile(indexFile);
     
-    //countertests
-    //counters_t* test1 = counters_new();
-    //counters_t* test2 = counters_new();
-    //counters_add(test1, 1);
-    //counters_add(test1, 1);
-    //counters_add(test1, 1);
-    //counters_add(test1, 2);
-    //counters_add(test1, 2);
-    //counters_add(test2, 1);
-    //counters_add(test2, 3);
-    //counters_add(test2, 3);
-    //printf("Printing first counter:");
-    //counters_print(test1, stdout);
-    //printf("\nPrinting second counter:");
-    //counters_print(test2, stdout);
-    //countersIntersect(index, test1, test2);
-    //counters_print(test1, stdout);
-
     //get the new queries from the user
     getQueries(index);
 
@@ -223,7 +208,7 @@ void handleQuery(char** input, int numWords, index_t* pageIndex){
     //for each word in the query
     int index = 0;
     counters_t* result = counters_new();
-    counters_t* temp = counters_new();
+    counters_t* temp;
     bool intersect = false;
     while (index < numWords){
         //if the word is and
@@ -254,27 +239,35 @@ void handleQuery(char** input, int numWords, index_t* pageIndex){
             if (intersect == false){
                 intersect = true;
                 //add to temp
-                printf("    added %s to temp\n", input[index]);
+                printf("    added %s to temp: ", input[index]);
                 temp = hashtable_find(pageIndex -> wordIndex, input[index]);
+                counters_print(temp, stdout);
                 index++;
             }
             //if currently being intersected, intersect the word with temp
             else{
                 //intersect the word with temp
-                printf("    intersect temp with %s \n", input[index]);
+                printf("\n    intersect temp with %s ", input[index]);
                 counters_t* toIntersect = hashtable_find(pageIndex -> wordIndex, input[index]);
                 countersIntersect(temp, toIntersect);
+                temp = toIntersect;
                 index++;
+                printf("\nTemp: ");
+                counters_print(temp, stdout);
+
             }
         }
     }
     //merge temp and result
-    printf("merge result and temp\n");
-    printf("\nPrinting result:");
+    printf("\nResult: ");
     counters_print(result, stdout);
+    printf("\nmerge result and temp");
+    countersMerge(result, temp);
+    printf("\nPrinting result");
+    counters_print(result, stdout);
+    //printQueryResult(result);
     counters_delete(result);
-    counters_delete(temp);
-
+    //delete the counters
     return;
 }
 
@@ -298,28 +291,82 @@ void mergeHelper(void* result, const int tempKey, const int tempCount){
     return;
 }
 
-
+struct counterArgs {
+    counters_t* temp;
+    counters_t* new;
+};
 //intersect the counters
 void countersIntersect(counters_t* temp, counters_t* new){
-    counters_iterate(new, temp, intersectHelper);
+    struct counterArgs counters = {temp, new};
+    counters_iterate(new, temp, intersectHelperOne);
+    counters_iterate(temp, new, intersectHelperTwo);
     return;
 }
 
 //intersect helper-- function that is called upon each item in temp; receives temp-> key and temp-> count
-void intersectHelper(void* temp, const int newKey, const int newCount){
+void intersectHelperOne(void* args, const int newKey, const int newCount){
     //if the result also has the key, find the lesser of their two keys and save that 
     int tempCounter;
-    printf("here");
     if ((tempCounter = counters_get(temp, newKey)) != 0){
-        printf("temp was %d and new was %d\n", tempCounter, newCount);
         if (tempCounter > newCount){
-            printf("this is right");
             counters_set(temp, newKey, newCount);
         }
+    
     }
-    //otherwise, retrieve the values of both counters, add them, and set result to the new value
+    //otherwise, add the counter to temp and set it to 0;
+    else{ 
+        counters_set(temp, newKey, 0);
+    }
     return;
 }
 
+void intersectHelperTwo(void* new, const int tempKey, const int tempCount){
+    //if second iteration and already changed to 0, delete
+    if (tempCount == 0){
+        counters_set(new, tempKey, 0);
+    }
+    return;
+}
 
+struct maxdoc {
+    int maxScore;
+    int ID;
+};
 
+void printQueryResult(counters_t* result){
+    int numMatches = 0;
+    counters_iterate(result, &numMatches, getNumDocs);
+    printf("\nNum matches: %d\n", numMatches);
+    if (numMatches == 0){
+        printf("No Matching Documents");
+    }
+    //else{ 
+        //struct maxdoc max = {0, 0};
+        //for(int i = 0; i < numMatches; i ++){
+            //counters_iterate(result, &max, getHighestScore);
+            //printf("score   %d doc  %d: URL", max.maxScore, max.ID);
+        //}
+
+    //}
+    return;
+}
+//stores the number of docIDs with a non-zero score in numMatches
+void getNumDocs(void* counter, const int docID, const int score){
+    printf("\nchecking counter score");
+    int* count = counter;
+    if (score != 0){
+        printf("\n found non-zero counter score");
+        (*count) ++;
+    }
+    return;
+}
+
+//sets the input arg to the key of the highest scoring doc
+void getHighestScore(void* argstruct, const int docID, const int score){
+    struct maxdoc* args = argstruct;
+    if (score > args -> maxScore){
+        args -> maxScore = score;
+        args -> ID = docID;
+    }
+    return;
+}
