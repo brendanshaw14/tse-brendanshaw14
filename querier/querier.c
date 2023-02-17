@@ -20,17 +20,16 @@ CS50- Winter 2023
 
 //headers
 index_t* indexFromFile(FILE* indexFile);
-void getQueries(index_t* pageIndex);
+void getQueries(index_t* pageIndex, char* pageDir);
 char** tokenizeQuery(char* input, int* numWords, char* output);
 bool verifyQuery(char** tokenizedQuery);
 void normalizeQuery(char** input, int numWords);
-void handleQuery(char** input, int numWords, index_t* pageIndex);
+void handleQuery(char** input, int numWords, index_t* pageIndex, char* pageDir);
 void countersMerge(counters_t* result, counters_t* temp);
 void mergeHelper(void* result, const int key, const int tempCount);
 void countersIntersect(counters_t* temp, counters_t* new);
-void intersectHelperOne(void* temp, const int newKey, const int newCount);
-void intersectHelperTwo(void* new, const int tempKey, const int tempCount);
-void printQueryResult(counters_t* result);
+void intersectHelper(void* args, const int newKey, const int newCount);
+void printQueryResult(counters_t* result, char* pageDir);
 void getNumDocs(void* counter, const int docID, const int score);
 void getHighestScore(void* argstruct, const int docID, const int score);
 
@@ -62,13 +61,11 @@ int main(const int argc, char* argv[]){
     }
 
     index_t* index = indexFromFile(indexFile);
-    
-    //get the new queries from the user
-    getQueries(index);
 
+    //get the new queries from the user
+    getQueries(index, argv[1]);
     index_delete(index);
     fclose(indexFile);
-   
     return 0;
 }
 
@@ -115,7 +112,7 @@ index_t* indexFromFile(FILE* indexFile){
         if true
             call parse query
 */
-void getQueries(index_t* pageIndex){
+void getQueries(index_t* pageIndex, char* pageDir){
     //initial print statement
     printf("Type your search below:\n");
     //loop through the query lines
@@ -131,7 +128,7 @@ void getQueries(index_t* pageIndex){
         }
         normalizeQuery(tokenizedQuery, *numWords);
         //handle the query
-        handleQuery(tokenizedQuery, *numWords, pageIndex);
+        handleQuery(tokenizedQuery, *numWords, pageIndex, pageDir);
         mem_free(tokenizedQuery);
         mem_free(inputLine);
         mem_free(output);
@@ -199,7 +196,7 @@ void normalizeQuery(char** input, int numWords){
 }
 
 /* Handle the words in the query */
-void handleQuery(char** input, int numWords, index_t* pageIndex){
+void handleQuery(char** input, int numWords, index_t* pageIndex, char* pageDir){
     //test that neither the first nor last word is and or or
     if ((strcmp(input[0], "and") == 0) || (strcmp(input[0], "or") == 0) || (strcmp(input[numWords-1], "and") == 0) || (strcmp(input[numWords-1], "or") == 0)){
         printf("Error: First and last words of query cannot be operators. Try again.\n");
@@ -229,7 +226,6 @@ void handleQuery(char** input, int numWords, index_t* pageIndex){
             }
             intersect = false;
             // merge result and temp
-            printf("merge result and temp\n");
             countersMerge(result, temp);
             index++;
         }
@@ -239,33 +235,23 @@ void handleQuery(char** input, int numWords, index_t* pageIndex){
             if (intersect == false){
                 intersect = true;
                 //add to temp
-                printf("    added %s to temp: ", input[index]);
                 temp = hashtable_find(pageIndex -> wordIndex, input[index]);
-                counters_print(temp, stdout);
                 index++;
             }
             //if currently being intersected, intersect the word with temp
             else{
                 //intersect the word with temp
-                printf("\n    intersect temp with %s ", input[index]);
                 counters_t* toIntersect = hashtable_find(pageIndex -> wordIndex, input[index]);
                 countersIntersect(temp, toIntersect);
                 temp = toIntersect;
                 index++;
-                printf("\nTemp: ");
-                counters_print(temp, stdout);
 
             }
         }
     }
     //merge temp and result
-    printf("\nResult: ");
-    counters_print(result, stdout);
-    printf("\nmerge result and temp");
     countersMerge(result, temp);
-    printf("\nPrinting result");
-    counters_print(result, stdout);
-    //printQueryResult(result);
+    printQueryResult(result, pageDir);
     counters_delete(result);
     //delete the counters
     return;
@@ -291,6 +277,7 @@ void mergeHelper(void* result, const int tempKey, const int tempCount){
     return;
 }
 
+//define the struct to pass as arg into countersIntersect
 struct counterArgs {
     counters_t* temp;
     counters_t* new;
@@ -298,32 +285,24 @@ struct counterArgs {
 //intersect the counters
 void countersIntersect(counters_t* temp, counters_t* new){
     struct counterArgs counters = {temp, new};
-    counters_iterate(new, temp, intersectHelperOne);
-    counters_iterate(temp, new, intersectHelperTwo);
+    counters_iterate(new, &counters, intersectHelper);
     return;
 }
 
 //intersect helper-- function that is called upon each item in temp; receives temp-> key and temp-> count
-void intersectHelperOne(void* args, const int newKey, const int newCount){
-    //if the result also has the key, find the lesser of their two keys and save that 
+void intersectHelper(void* args, const int newKey, const int newCount){
+    //store the args locally
+    struct counterArgs* counters = args;
     int tempCounter;
-    if ((tempCounter = counters_get(temp, newKey)) != 0){
-        if (tempCounter > newCount){
-            counters_set(temp, newKey, newCount);
+    //if the result also has the key, find the lesser of their two keys and save that 
+    if ((tempCounter = counters_get(counters -> temp, newKey)) != 0){
+        if (tempCounter < newCount){
+            counters_set(counters -> new, newKey, counters_get(counters -> temp, newKey));
         }
-    
     }
-    //otherwise, add the counter to temp and set it to 0;
+    //otherwise set it to 0;
     else{ 
-        counters_set(temp, newKey, 0);
-    }
-    return;
-}
-
-void intersectHelperTwo(void* new, const int tempKey, const int tempCount){
-    //if second iteration and already changed to 0, delete
-    if (tempCount == 0){
-        counters_set(new, tempKey, 0);
+        counters_set(counters -> new, newKey, 0);
     }
     return;
 }
@@ -333,29 +312,39 @@ struct maxdoc {
     int ID;
 };
 
-void printQueryResult(counters_t* result){
+void printQueryResult(counters_t* result, char* pageDir){
     int numMatches = 0;
     counters_iterate(result, &numMatches, getNumDocs);
-    printf("\nNum matches: %d\n", numMatches);
     if (numMatches == 0){
         printf("No Matching Documents");
     }
-    //else{ 
-        //struct maxdoc max = {0, 0};
-        //for(int i = 0; i < numMatches; i ++){
-            //counters_iterate(result, &max, getHighestScore);
-            //printf("score   %d doc  %d: URL", max.maxScore, max.ID);
-        //}
+    else{ 
+        struct maxdoc max = {0, 0};
+        for(int i = 0; i < numMatches; i ++){
+            //find the highest score and its docID and store in max
+            counters_iterate(result, &max, getHighestScore);
+            //open the pagedirFile
+            char* pageDirName = mem_malloc(strlen(pageDir) + 10);
+            sprintf(pageDirName, "%s/%d", pageDir, max.ID);
+            FILE* fp = fopen(pageDirName, "r");
+            char* URL = file_readLine(fp);
+            printf("score   %d doc  %d: %s\n", max.maxScore, max.ID, URL);
+            //set the current highest counter to 0 and reset args
+            counters_set(result, max.ID, 0);
+            max.ID = 0;
+            max.maxScore = 0;
+            mem_free(pageDirName);
+            mem_free(URL);
+            fclose(fp);
+        }
 
-    //}
+    }
     return;
 }
 //stores the number of docIDs with a non-zero score in numMatches
 void getNumDocs(void* counter, const int docID, const int score){
-    printf("\nchecking counter score");
     int* count = counter;
     if (score != 0){
-        printf("\n found non-zero counter score");
         (*count) ++;
     }
     return;
