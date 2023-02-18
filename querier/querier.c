@@ -31,7 +31,6 @@ To use, make test.
 index_t* indexFromFile(FILE* indexFile);
 void getQueries(index_t* pageIndex, char* pageDir);
 char** tokenizeQuery(char* input, int* numWords, char* output);
-bool verifyQuery(char** tokenizedQuery);
 void normalizeQuery(char** input, int numWords);
 void handleQuery(char** input, int numWords, index_t* pageIndex, char* pageDir);
 void countersMerge(counters_t* result, counters_t* temp);
@@ -51,17 +50,29 @@ int main(const int argc, char* argv[]){
         fprintf(stderr, "Error: Incorrect number of arguments\n");
         exit(1);
     }
-    //validate pageDir
+    //validate pageDir has .crawler
     if (pagedir_validate(argv[1]) != true){
         fprintf(stderr, "Error: invalid or nonexistent pageDir\n");
         exit(2);
+    }
+    //validate pageDir has "1" page
+    else{
+        char* pageDirName = mem_malloc(strlen(argv[1]) + 10); 
+        sprintf(pageDirName, "%s/%d", argv[1], 1);
+        FILE* fp = fopen(pageDirName, "r");
+        if (fp == NULL){
+            fprintf(stderr, "Unable to open first pageDir file\n");
+            exit(5);
+        }
+        mem_free(pageDirName);
+        fclose(fp);
     }
     //validate indexFile
     FILE* indexFile = NULL;
     indexFile = fopen(argv[2], "r");
     if (indexFile == NULL){
         fprintf(stderr, "Error: Unable to open indexFile\n");
-        exit(3);
+        exit(4);
     }
     //load the index from the indexFile
     index_t* index = indexFromFile(indexFile);
@@ -220,7 +231,7 @@ void handleQuery(char** input, int numWords, index_t* pageIndex, char* pageDir){
         //if the word is and
         if(strcmp(input[index], "and") == 0){
             //make sure the next word isn't also and
-            if (strcmp(input[index], input[index+1]) == 0){
+            if (strcmp(input[index], input[index+1]) == 0 || (strcmp("or", input[index+1]) == 0)){
                 printf( "Error: found two consecutive and operators \n");
                 return;
             }
@@ -228,8 +239,8 @@ void handleQuery(char** input, int numWords, index_t* pageIndex, char* pageDir){
         }
         //if the word is or
         else if (strcmp(input[index], "or") == 0){
-            //make sure the next word isn't also and
-            if (strcmp(input[index], input[index+1]) == 0){
+            //make sure the next word isn't also an operator
+            if (strcmp(input[index], input[index+1]) == 0 || (strcmp("and", input[index+1]) == 0)){
                 printf( "Error: found two consecutive or operators \n");
                 return;
             }

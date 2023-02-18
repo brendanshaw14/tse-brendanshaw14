@@ -42,14 +42,14 @@ fuzzquery.o: ./fuzzquery.c $(LLIBS) $(CLIBS)
 
 
 test: 
-	./querier ../data/letters ../data/indexFileMakeTest
+	bash -v testing.sh
 
 #make valgrind for querier
 valgrind: 
 	valgrind --leak-check=full --show-leak-kinds=all ./querier ../data/letters ../data/indexFileMakeTest
 
 fuzz: 
-	./fuzzquery ../data/indexFileMakeTest 10 1 | ./querier ../data/letters ../data/indexFileMakeTest
+	./fuzzquery ../data/toscrape1Index 100 1 | ./querier /thayerfs/home/f005670/cs50-dev/shared/tse/output/toscrape-1 ../data/toscrape1Index
 
 fuzzgrind: 
 	./fuzzquery ../data/toscrape1Index 100 1 | valgrind --leak-check=full --show-leak-kinds=all ./querier /thayerfs/home/f005670/cs50-dev/shared/tse/output/toscrape-1 ../data/toscrape1Index
